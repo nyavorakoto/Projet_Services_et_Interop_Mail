@@ -1,0 +1,21 @@
+FROM: nyavo@stri.com
+TO: bob@stri.com
+----- MESSAGE -----
+dedededede
+dedede
+----- FIN -----
+
+FROM: nyavo@stri.com
+TO: bob@stri.com
+----- MESSAGE -----
+bonjour bob
+test n3
+----- FIN -----
+
+FROM: nyavo@stri.com
+TO: balla@gmail.com
+----- MESSAGE -----
+salut balla
+nique ta mere
+----- FIN -----
+

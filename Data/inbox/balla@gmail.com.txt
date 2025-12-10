@@ -1,0 +1,7 @@
+FROM: nyavo@stri.com
+TO: balla@gmail.com
+----- MESSAGE -----
+salut balla
+nique ta mere
+----- FIN -----
+

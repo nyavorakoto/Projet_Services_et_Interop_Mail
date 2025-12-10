@@ -1,0 +1,8 @@
+FROM: yves@stri.com
+TO: bob@stri.com
+----- MESSAGE -----
+bonjour bob
+test numéro 4.
+Cordialement
+----- FIN -----
+

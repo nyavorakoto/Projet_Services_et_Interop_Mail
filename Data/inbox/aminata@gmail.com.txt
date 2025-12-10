@@ -1,0 +1,7 @@
+FROM: nyavo@example.com
+TO: aminata@gmail.com
+----- MESSAGE -----
+Bonjour Abdaminatael,
+C'est le test3.
+----- FIN -----
+

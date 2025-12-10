@@ -1,0 +1,14 @@
+FROM: abdel@example.com
+TO: nyavo@gmail.com
+----- MESSAGE -----
+Bonjour Abdaminatael,
+C'est le test3.
+----- FIN -----
+
+FROM: abdel@example.com
+TO: nyavo@gmail.com
+----- MESSAGE -----
+Bonjour Abdaminatael,
+C'est le test3.
+----- FIN -----
+
