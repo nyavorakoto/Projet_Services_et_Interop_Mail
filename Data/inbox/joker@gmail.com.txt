@@ -1,0 +1,7 @@
+FROM: nyavo@stri.com
+TO: joker@gmail.com
+----- MESSAGE -----
+dajsnconfd,edf.
+tu es ou toi ? 
+----- FIN -----
+

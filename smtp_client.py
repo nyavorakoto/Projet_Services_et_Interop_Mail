@@ -5,7 +5,7 @@ PORT = 2525
 
 
 def envoyer(sock, ligne):
-    """Envoie une commande au serveur SMTP et affiche la réponse."""
+    #Envoie une commande au serveur SMTP et affiche la réponse.
     sock.sendall((ligne + "\r\n").encode("utf-8"))
     rep = sock.recv(1024).decode("utf-8").strip()
     print(f"<<< {rep}")
@@ -13,23 +13,23 @@ def envoyer(sock, ligne):
 
 
 def connexion_utilisateur(sock):
-    """Boucle de connexion LOGIN + PASS jusqu'à réussite."""
+    #Boucle la connexion LOGIN + PASS jusqu'à réussite.
     while True:
         print("\n===== Connexion utilisateur =====")
-        email = input("Email : ").strip()
+        email = input("Mail : ").strip()
         password = input("Mot de passe : ").strip()
 
         rep = envoyer(sock, f"LOGIN {email}")
         if not rep.startswith("331"):
-            print("❌ Utilisateur inconnu. Réessayez.")
+            print("Utilisateur inconnu. Réessayez.")
             continue
 
         rep = envoyer(sock, f"PASS {password}")
         if rep.startswith("235"):
-            print("✔ Connexion réussie !\n")
+            print("Connexion réussie !\n")
             return email  # On renvoie l'utilisateur authentifié
         else:
-            print("❌ Mot de passe incorrect. Réessayez.")
+            print("Mot de passe incorrect. Réessayez.")
 
 
 def envoyer_message():
@@ -45,7 +45,7 @@ def envoyer_message():
 
         destinataire = input("Destinataire : ").strip()
 
-        print("\nÉcris ton message ('.' pour terminer) :")
+        print("\nÉcrivez votre message ('.' pour terminer) :")
         lignes = []
         while True:
             ligne = input("> ")
@@ -59,7 +59,7 @@ def envoyer_message():
         # DATA
         rep = envoyer(s, "DATA")
         if not rep.startswith("354"):
-            print("❌ Erreur DATA.")
+            print("Erreur DATA.")
             return
 
         # Corps du message
@@ -72,7 +72,7 @@ def envoyer_message():
 
         envoyer(s, "QUIT")
 
-        print("\n✔ Message envoyé avec succès !\n")
+        print("\nMessage envoyé avec succès !\n")
 
 
 def main():

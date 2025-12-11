@@ -26,3 +26,17 @@ bonjour
 TEST 2
 ----- FIN -----
 
+FROM: nyavo@stri.com
+TO: joker@gmail.com
+----- MESSAGE -----
+dajsnconfd,edf.
+tu es ou toi ? 
+----- FIN -----
+
+FROM: nyavo@stri.com
+TO: balla@gmail.com
+----- MESSAGE -----
+nejdofeznd
+Je test
+----- FIN -----
+

@@ -4,9 +4,9 @@ import os
 from Utils.file_manager import sauvegarder_mail, sauvegarder_mail_envoye
 
 
-# ----------------------------------------------------------
+##########################################
 # Chargement des utilisateurs (users.json)
-# ----------------------------------------------------------
+##########################################
 def charger_utilisateurs():
     chemin = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Data", "users.json")
     with open(chemin, "r", encoding="utf-8") as f:
@@ -40,7 +40,8 @@ class SMTPSession(threading.Thread):
         self.client.sendall((message + "\r\n").encode("utf-8"))
 
     def run(self):
-        self.envoyer("220 SMTP Server Ready (Auth Required)")
+        # 220 SMTP Server Ready (Auth Required)
+        self.envoyer("220 Serveur SMTP Prêt (Authentification Requise)")
 
         try:
             while True:
@@ -54,12 +55,12 @@ class SMTPSession(threading.Thread):
                     ligne, self.buffer_reception = self.buffer_reception.split("\r\n", 1)
                     print(f"[REÇU] {repr(ligne)}")
 
-                    # ---------------------------
+                    ###########
                     # MODE DATA
-                    # ---------------------------
+                    ###########
                     if self.data_mode:
                         if ligne == ".":
-                            print("[SMTP] Fin DATA → sauvegarde")
+                            print("[SMTP] Fin DATA -> Sauvegarde du message")
                             self.terminer_data()
                         else:
                             self.buffer_message.append(ligne)
@@ -67,9 +68,9 @@ class SMTPSession(threading.Thread):
 
                     cmd = ligne.upper()
 
-                    # ---------------------------
+                    ############
                     # AUTH LOGIN
-                    # ---------------------------
+                    ############
                     if cmd.startswith("LOGIN "):
                         self.traiter_login(ligne)
                         continue
@@ -78,14 +79,15 @@ class SMTPSession(threading.Thread):
                         self.traiter_pass(ligne)
                         continue
 
-                    # Si pas connecté → refuser SMTP
+                    # Si pas connecté -> refuser SMTP
                     if self.authenticated_user is None:
-                        self.envoyer("530 Authentication required")
+                        # 530 Authentication required
+                        self.envoyer("530 Authentification requise")
                         continue
 
-                    # ---------------------------
+                    ################
                     # SMTP COMMANDES
-                    # ---------------------------
+                    ################
                     if cmd.startswith("RCPT TO:"):
                         self.traiter_rcpt(ligne)
 
@@ -93,32 +95,37 @@ class SMTPSession(threading.Thread):
                         self.traiter_data()
 
                     elif cmd == "QUIT":
-                        self.envoyer("221 Bye")
+                        # 221 Bye
+                        self.envoyer("221 Au revoir")
                         return
 
                     else:
-                        self.envoyer("500 Command not recognized")
+                        # 500 Command not recognized
+                        self.envoyer("500 Commande non reconnue")
 
         finally:
-            print(f"[CONNEXION] Fermeture : {self.addr}")
+            print(f"[CONNEXION] Fermeture de la connexion : {self.addr}")
             self.client.close()
 
-    # ==========================================================
-    # AUTH
-    # ==========================================================
+    ##################
+    # AUTHENTIFICATION
+    ##################
     def traiter_login(self, ligne):
         email = ligne[6:].strip()
 
         if email in USERS:
             self.temp_login = email
             self.waiting_for_password = True
-            self.envoyer("331 Username OK, need password")
+            # 331 Username OK, need password
+            self.envoyer("331 Authentification ok, en attente du mot de passe")
         else:
-            self.envoyer("530 User not found")
+            # 530 User not found
+            self.envoyer("530 Utilisateur non trouvé")
 
     def traiter_pass(self, ligne):
         if not self.waiting_for_password:
-            self.envoyer("503 Bad sequence, LOGIN first")
+            # 503 Bad sequence, LOGIN first
+            self.envoyer("503 Mauvaise séquence, LOGIN d'abord")
             return
 
         password = ligne[5:].strip()
@@ -126,32 +133,37 @@ class SMTPSession(threading.Thread):
         if USERS[self.temp_login]["password"] == password:
             self.authenticated_user = self.temp_login
             self.waiting_for_password = False
-            self.envoyer("235 Authentication successful")
+            # 235 Authentication successful
+            self.envoyer("235 Authentification réussie")
             print(f"[AUTH] {self.authenticated_user} connecté.")
         else:
-            self.envoyer("535 Authentication failed")
+            # 535 Authentication failed
+            self.envoyer("535 Authentification échouée")
 
-    # ==========================================================
+    #######
     # SMTP
-    # ==========================================================
+    #######
     def traiter_rcpt(self, ligne):
         dest = ligne[8:].replace("<", "").replace(">", "").strip()
         self.destinataires.append(dest)
-        self.envoyer("250 Recipient OK")
+        # 250 Recipient OK
+        self.envoyer("250 Destinataire OK")
 
     def traiter_data(self):
         if not self.destinataires:
-            self.envoyer("503 Need RCPT TO first")
+            # 503 Need RCPT TO first
+            self.envoyer("503 RCPT TO manquant")
             return
 
         self.data_mode = True
         self.buffer_message = []
-        self.envoyer("354 Start mail input; end with <CRLF>.<CRLF>")
+        # 354 Start mail input; end with <CRLF>.<CRLF>
+        self.envoyer("354 Début de l'entrée du mail; terminer avec <CRLF>.<CRLF>")
 
     def terminer_data(self):
         self.data_mode = False
 
-        print(f"[MAIL] {self.authenticated_user} → {self.destinataires}")
+        print(f"[MAIL] mail de {self.authenticated_user} vers {self.destinataires}")
 
         # Sauvegarde
         for dest in self.destinataires:
@@ -159,4 +171,5 @@ class SMTPSession(threading.Thread):
 
         sauvegarder_mail_envoye(self.authenticated_user, self.destinataires, self.buffer_message)
 
-        self.envoyer("250 Message accepted for delivery")
+        # 250 Message accepted for delivery
+        self.envoyer("250 Message accepté pour livraison")

@@ -5,3 +5,10 @@ salut balla
 nique ta mere
 ----- FIN -----
 
+FROM: nyavo@stri.com
+TO: balla@gmail.com
+----- MESSAGE -----
+nejdofeznd
+Je test
+----- FIN -----
+

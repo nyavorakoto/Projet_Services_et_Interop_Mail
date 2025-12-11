@@ -5,7 +5,7 @@ BASE_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Data")
 INBOX_DIR = os.path.join(BASE_DATA_DIR, "inbox")
 SENT_DIR = os.path.join(BASE_DATA_DIR, "sent")
 
-# Création des dossiers (si pas encore créer)
+# Création des dossiers (si pas encore créés)
 os.makedirs(INBOX_DIR, exist_ok=True)
 os.makedirs(SENT_DIR, exist_ok=True)
 
@@ -27,10 +27,9 @@ def sauvegarder_mail(destinataire: str, expediteur: str, lignes_message: list[st
 
 
 def sauvegarder_mail_envoye(expediteur: str, destinataires: list[str], lignes_message: list[str]) -> None:
-    """
-    Sauvegarde une copie du mail dans la boîte 'envoyés' de l'expéditeur.
-    (Pas obligatoire pour V1, mais propre pour la suite.)
-    """
+    
+    #Sauvegarde une copie du mail dans la boîte 'envoyés' de l'expéditeur.
+    
     chemin_fichier = os.path.join(SENT_DIR, f"{expediteur}.txt")
 
     with open(chemin_fichier, "a", encoding="utf-8") as f:
