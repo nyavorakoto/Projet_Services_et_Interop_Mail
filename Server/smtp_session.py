@@ -36,11 +36,11 @@ class SMTPSession(threading.Thread):
         print(f"[CONNEXION] Nouveau client : {client_addr}")
 
     def envoyer(self, message: str):
-        """Envoie une réponse SMTP avec CRLF."""
+        #Envoie une réponse SMTP
         self.client.sendall((message + "\r\n").encode("utf-8"))
 
     def run(self):
-        # 220 SMTP Server Ready (Auth Required)
+        # 220 SMTP Server Ready 
         self.envoyer("220 Serveur SMTP Prêt (Authentification Requise)")
 
         try:
@@ -116,7 +116,7 @@ class SMTPSession(threading.Thread):
         if email in USERS:
             self.temp_login = email
             self.waiting_for_password = True
-            # 331 Username OK, need password
+            # 331 login OK, besoin mdp
             self.envoyer("331 Authentification ok, en attente du mot de passe")
         else:
             # 530 User not found
@@ -124,7 +124,6 @@ class SMTPSession(threading.Thread):
 
     def traiter_pass(self, ligne):
         if not self.waiting_for_password:
-            # 503 Bad sequence, LOGIN first
             self.envoyer("503 Mauvaise séquence, LOGIN d'abord")
             return
 
@@ -146,18 +145,18 @@ class SMTPSession(threading.Thread):
     def traiter_rcpt(self, ligne):
         dest = ligne[8:].replace("<", "").replace(">", "").strip()
         self.destinataires.append(dest)
-        # 250 Recipient OK
+        # 250 Destinataire OK
         self.envoyer("250 Destinataire OK")
 
     def traiter_data(self):
         if not self.destinataires:
-            # 503 Need RCPT TO first
+            # 503 besoin d'abord de RCPT TO
             self.envoyer("503 RCPT TO manquant")
             return
 
         self.data_mode = True
         self.buffer_message = []
-        # 354 Start mail input; end with <CRLF>.<CRLF>
+        # 354 Entrée mail, finir avec un point pour terminer la saisie
         self.envoyer("354 Début de l'entrée du mail; terminer avec un point")
 
     def terminer_data(self):
@@ -171,5 +170,5 @@ class SMTPSession(threading.Thread):
 
         sauvegarder_mail_envoye(self.authenticated_user, self.destinataires, self.buffer_message)
 
-        # 250 Message accepted for delivery
+        # 250 Message accepté
         self.envoyer("250 Message envoyé")
