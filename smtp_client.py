@@ -5,7 +5,7 @@ PORT = 2525
 
 
 def envoyer(sock, ligne):
-    #Envoie une commande au serveur SMTP et affiche la réponse.
+    """Envoie une commande au serveur SMTP et affiche la réponse."""
     sock.sendall((ligne + "\r\n").encode("utf-8"))
     rep = sock.recv(1024).decode("utf-8").strip()
     print(f"<<< {rep}")
@@ -13,10 +13,10 @@ def envoyer(sock, ligne):
 
 
 def connexion_utilisateur(sock):
-    #Boucle la connexion LOGIN + PASS jusqu'à réussite.
+    """Boucle la connexion LOGIN + PASS jusqu'à réussite."""
     while True:
         print("\n===== Connexion utilisateur =====")
-        email = input("Mail : ").strip()
+        email = input("Email : ").strip()
         password = input("Mot de passe : ").strip()
 
         rep = envoyer(sock, f"LOGIN {email}")
@@ -26,13 +26,49 @@ def connexion_utilisateur(sock):
 
         rep = envoyer(sock, f"PASS {password}")
         if rep.startswith("235"):
-            print("Connexion réussie !\n")
+            print(" Connexion réussie !\n")
             return email  # On renvoie l'utilisateur authentifié
         else:
             print("Mot de passe incorrect. Réessayez.")
 
 
-def envoyer_message():
+def envoyer_un_mail(sock, expediteur):
+    """Envoie un seul mail en réutilisant la connexion existante."""
+    destinataire = input("Destinataire : ").strip()
+
+    print("\nÉcrivez votre message ('.' pour terminer) :")
+    lignes = []
+    while True:
+        ligne = input("> ")
+        if ligne == ".":
+            break
+        lignes.append(ligne)
+
+    # MAIL FROM (utilise l'expéditeur déjà authentifié)
+    envoyer(sock, f"MAIL FROM:<{expediteur}>")
+
+    # RCPT TO
+    envoyer(sock, f"RCPT TO:<{destinataire}>")
+
+    # DATA
+    rep = envoyer(sock, "DATA")
+    if not rep.startswith("354"):
+        print("Erreur DATA.")
+        return
+
+    # Corps du message
+    for l in lignes:
+        sock.sendall((l + "\r\n").encode("utf-8"))
+
+    # Fin
+    sock.sendall(b".\r\n")
+    print("<<<", sock.recv(1024).decode("utf-8").strip())
+
+    print("\n Message envoyé avec succès !\n")
+
+
+def main():
+    # Connexion unique au serveur
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
@@ -40,47 +76,19 @@ def envoyer_message():
         rep = s.recv(1024).decode("utf-8").strip()
         print("<<<", rep)
 
-        # Connexion obligatoire AVANT d'envoyer un mail
+        
+        # Authentification unique
         expediteur = connexion_utilisateur(s)
 
-        destinataire = input("Destinataire : ").strip()
-
-        print("\nÉcrivez votre message ('.' pour terminer) :")
-        lignes = []
+        # Boucle pour envoyer plusieurs mails sans se reconnecter
         while True:
-            ligne = input("> ")
-            if ligne == ".":
+            envoyer_un_mail(s, expediteur)
+            again = input("Envoyer un autre mail ? (o/n) : ").lower()
+            if again != "o":
                 break
-            lignes.append(ligne)
 
-        # RCPT TO
-        envoyer(s, f"RCPT TO:<{destinataire}>")
-
-        # DATA
-        rep = envoyer(s, "DATA")
-        if not rep.startswith("354"):
-            print("Erreur DATA.")
-            return
-
-        # Corps du message
-        for l in lignes:
-            s.sendall((l + "\r\n").encode("utf-8"))
-
-        # Fin
-        s.sendall(b".\r\n")
-        print("<<<", s.recv(1024).decode("utf-8").strip())
-
+        # Déconnexion finale
         envoyer(s, "QUIT")
-
-        print("\nMessage envoyé avec succès !\n")
-
-
-def main():
-    while True:
-        envoyer_message()
-        again = input("Envoyer un autre mail ? (o/n) : ").lower()
-        if again != "o":
-            break
 
 
 if __name__ == "__main__":

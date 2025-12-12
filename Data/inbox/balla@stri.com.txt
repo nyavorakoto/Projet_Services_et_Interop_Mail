@@ -1,7 +1,0 @@
-FROM: nyavo@stri.com
-TO: balla@stri.com
------ MESSAGE -----
-bonjour
-TEST 2
------ FIN -----
-

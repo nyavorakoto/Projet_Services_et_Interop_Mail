@@ -5,7 +5,7 @@ hello
 ----- FIN -----
 
 FROM: yves@stri.com
-TO: aminata@stri.com, abdel@stri.com
+TO: aminata@stri.com
 ----- MESSAGE -----
 hello 2
 ----- FIN -----

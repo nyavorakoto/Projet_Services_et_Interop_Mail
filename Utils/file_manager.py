@@ -1,41 +1,39 @@
+import threading
 import os
 
-# Dossiers de stockage des mails
-BASE_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Data")
-INBOX_DIR = os.path.join(BASE_DATA_DIR, "inbox")
-SENT_DIR = os.path.join(BASE_DATA_DIR, "sent")
+# Verrou pour éviter les accès simultanés
+lock = threading.Lock()
 
-# Création des dossiers (si pas encore créés)
-os.makedirs(INBOX_DIR, exist_ok=True)
-os.makedirs(SENT_DIR, exist_ok=True)
+def sauvegarder_mail(destinataire, expediteur, message_lines):
+    """Sauvegarde un email dans la boîte de réception du destinataire (format texte)."""
+    with lock:  # Verrou pour thread-safety
+        inbox_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Data", "inbox")
+        os.makedirs(inbox_dir, exist_ok=True)
+        
+        inbox_file = os.path.join(inbox_dir, f"{destinataire}.txt")
+        
+        # Append le mail au fichier (format texte souhaité)
+        with open(inbox_file, "a", encoding="utf-8") as f:
+            f.write(f"FROM: {expediteur}\n")
+            f.write(f"TO: {destinataire}\n")
+            f.write("----- MESSAGE -----\n")
+            for ligne in message_lines:
+                f.write(ligne + "\n")
+            f.write("----- FIN -----\n\n")
 
-
-def sauvegarder_mail(destinataire: str, expediteur: str, lignes_message: list[str]) -> None:
-    """
-    Sauvegarde le mail dans la boîte de réception du destinataire
-    sous forme d'un simple fichier texte.
-    """
-    chemin_fichier = os.path.join(INBOX_DIR, f"{destinataire}.txt")
-
-    with open(chemin_fichier, "a", encoding="utf-8") as f:
-        f.write(f"FROM: {expediteur}\n")
-        f.write(f"TO: {destinataire}\n")
-        f.write("----- MESSAGE -----\n")
-        for ligne in lignes_message:
-            f.write(ligne + "\n")
-        f.write("----- FIN -----\n\n")
-
-
-def sauvegarder_mail_envoye(expediteur: str, destinataires: list[str], lignes_message: list[str]) -> None:
-    
-    #Sauvegarde une copie du mail dans la boîte 'envoyés' de l'expéditeur.
-    
-    chemin_fichier = os.path.join(SENT_DIR, f"{expediteur}.txt")
-
-    with open(chemin_fichier, "a", encoding="utf-8") as f:
-        f.write(f"FROM: {expediteur}\n")
-        f.write("TO: " + ", ".join(destinataires) + "\n")
-        f.write("----- MESSAGE -----\n")
-        for ligne in lignes_message:
-            f.write(ligne + "\n")
-        f.write("----- FIN -----\n\n")
+def sauvegarder_mail_envoye(expediteur, destinataires, message_lines):
+    """Sauvegarde un email dans les emails envoyés de l'expéditeur (format texte)."""
+    with lock:  # Verrou pour thread-safety
+        sent_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Data", "Sent")
+        os.makedirs(sent_dir, exist_ok=True)
+        
+        sent_file = os.path.join(sent_dir, f"{expediteur}.txt")
+        
+        # Append le mail au fichier (format texte souhaité)
+        with open(sent_file, "a", encoding="utf-8") as f:
+            f.write(f"FROM: {expediteur}\n")
+            f.write("TO: " + ", ".join(destinataires) + "\n")
+            f.write("----- MESSAGE -----\n")
+            for ligne in message_lines:
+                f.write(ligne + "\n")
+            f.write("----- FIN -----\n\n")

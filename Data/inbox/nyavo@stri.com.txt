@@ -1,0 +1,6 @@
+FROM: abdel@stri.com
+TO: nyavo@stri.com
+----- MESSAGE -----
+hello3
+----- FIN -----
+

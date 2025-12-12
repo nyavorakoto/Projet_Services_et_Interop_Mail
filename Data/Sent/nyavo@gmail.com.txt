@@ -1,7 +1,0 @@
-FROM: nyavo@gmail.com
-TO: abdel@gmail.com
------ MESSAGE -----
-craxece
-cecfce
------ FIN -----
-

@@ -101,7 +101,7 @@ class SMTPSession(threading.Thread):
 
                     else:
                         # 500 Command not recognized
-                        self.envoyer("500 Commande non reconnue")
+                        self.envoyer(" ")
 
         finally:
             print(f"[CONNEXION] Fermeture de la connexion : {self.addr}")
@@ -158,7 +158,7 @@ class SMTPSession(threading.Thread):
         self.data_mode = True
         self.buffer_message = []
         # 354 Start mail input; end with <CRLF>.<CRLF>
-        self.envoyer("354 Début de l'entrée du mail; terminer avec <CRLF>.<CRLF>")
+        self.envoyer("354 Début de l'entrée du mail; terminer avec un point")
 
     def terminer_data(self):
         self.data_mode = False
@@ -172,4 +172,4 @@ class SMTPSession(threading.Thread):
         sauvegarder_mail_envoye(self.authenticated_user, self.destinataires, self.buffer_message)
 
         # 250 Message accepted for delivery
-        self.envoyer("250 Message accepté pour livraison")
+        self.envoyer("250 Message envoyé")
