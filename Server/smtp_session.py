@@ -22,22 +22,26 @@ class SMTPSession(threading.Thread):
         self.client = client_socket
         self.addr = client_addr
 
-        # État d’authentification
+        # État d'identification (V2)
+        self.identified = False
+
+        # État d'authentification
         self.authenticated_user = None
         self.temp_login = None
         self.waiting_for_password = False
 
         # État SMTP
+        self.mail_from = None
         self.destinataires = []
         self.data_mode = False
         self.buffer_message = []
         self.buffer_reception = ""
 
-        print(f"[CONNEXION] Nouveau client : {client_addr}")
-
+       
     def envoyer(self, message: str):
         #Envoie une réponse SMTP
         self.client.sendall((message + "\r\n").encode("utf-8"))
+        print(f"[ENVOYÉ] {message}")  # Log des réponses envoyées
 
     def run(self):
         # 220 SMTP Server Ready 
@@ -69,6 +73,16 @@ class SMTPSession(threading.Thread):
                     cmd = ligne.upper()
 
                     ############
+                    # IDENTIFICATION (V2)
+                    ############
+                    if cmd.startswith("HELO "):
+                        self.traiter_helo(ligne)
+                        continue
+                    elif cmd.startswith("EHLO "):
+                        self.traiter_ehlo(ligne)
+                        continue
+
+                    ############
                     # AUTH LOGIN
                     ############
                     if cmd.startswith("LOGIN "):
@@ -79,16 +93,18 @@ class SMTPSession(threading.Thread):
                         self.traiter_pass(ligne)
                         continue
 
-                    # Si pas connecté -> refuser SMTP
-                    if self.authenticated_user is None:
-                        # 530 Authentication required
-                        self.envoyer("530 Authentification requise")
+                    # Vérifier identification avant toute commande transaction (V2)
+                    if not self.identified:
+                        self.envoyer("503 Bad sequence of commands")
                         continue
 
                     ################
                     # SMTP COMMANDES
                     ################
-                    if cmd.startswith("RCPT TO:"):
+                    if cmd.startswith("MAIL FROM:"):
+                        self.traiter_mail_from(ligne)
+
+                    elif cmd.startswith("RCPT TO:"):
                         self.traiter_rcpt(ligne)
 
                     elif cmd == "DATA":
@@ -101,7 +117,7 @@ class SMTPSession(threading.Thread):
 
                     else:
                         # 500 Command not recognized
-                        self.envoyer(" ")
+                        self.envoyer("500 Commande non reconnue")
 
         finally:
             print(f"[CONNEXION] Fermeture de la connexion : {self.addr}")
@@ -142,7 +158,39 @@ class SMTPSession(threading.Thread):
     #######
     # SMTP
     #######
+    def traiter_helo(self, ligne):
+        # V2: Accepter HELO avec 250 OK
+        domain = ligne[5:].strip()
+        self.identified = True
+        self.envoyer("250 OK")
+
+    def traiter_ehlo(self, ligne):
+        # V2: Rejeter EHLO avec 502 (extensions non supportées)
+        self.envoyer("502 Commande non implémentée")
+
+    def traiter_mail_from(self, ligne):
+        # Vérifier authentification
+        if self.authenticated_user is None:
+            self.envoyer("530 Authentification requise")
+            return
+
+        # Extraire l'adresse
+        addr = ligne[10:].replace("<", "").replace(">", "").strip()
+        
+        # Vérifier que c'est l'utilisateur authentifié
+        if addr != self.authenticated_user:
+            self.envoyer("550 Envoyeur non autorisé")
+            return
+
+        self.mail_from = addr
+        self.envoyer("250 OK")
+
     def traiter_rcpt(self, ligne):
+        # Vérifier MAIL FROM d'abord
+        if self.mail_from is None:
+            self.envoyer("503 Bad sequence of commands")
+            return
+
         dest = ligne[8:].replace("<", "").replace(">", "").strip()
         self.destinataires.append(dest)
         # 250 Destinataire OK

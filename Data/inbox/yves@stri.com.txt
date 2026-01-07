@@ -1,13 +1,13 @@
-FROM: abdel@stri.com
-TO: nyavo@stri.com
+FROM: aminata@stri.com
+TO: yves@stri.com
 ----- MESSAGE -----
-hello3
+teste parallélisme 1
 ----- FIN -----
 
-FROM: abdel@stri.com
-TO: nyavo@stri.com
+FROM: nyavo@stri.com
+TO: yves@stri.com
 ----- MESSAGE -----
-hello test 2 v2 
+test_parallélise v2 2
 ----- FIN -----
 
 FROM: abdel@stri.com

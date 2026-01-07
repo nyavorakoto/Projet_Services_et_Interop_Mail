@@ -1,0 +1,6 @@
+FROM: aminata@stri.com
+TO: yves@stri.com
+----- MESSAGE -----
+teste parallélisme 1
+----- FIN -----
+

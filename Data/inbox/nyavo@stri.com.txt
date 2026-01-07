@@ -4,3 +4,9 @@ TO: nyavo@stri.com
 hello3
 ----- FIN -----
 
+FROM: abdel@stri.com
+TO: nyavo@stri.com
+----- MESSAGE -----
+hello test 2 v2 
+----- FIN -----
+

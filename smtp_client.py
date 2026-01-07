@@ -5,15 +5,14 @@ PORT = 2525
 
 
 def envoyer(sock, ligne):
-    """Envoie une commande au serveur SMTP et affiche la réponse."""
+    #Envoie une commande au serveur SMTP et affiche la réponse
     sock.sendall((ligne + "\r\n").encode("utf-8"))
     rep = sock.recv(1024).decode("utf-8").strip()
-    print(f"<<< {rep}")
     return rep
 
 
 def connexion_utilisateur(sock):
-    """Boucle la connexion LOGIN + PASS jusqu'à réussite."""
+    #Boucle la connexion LOGIN + PASS jusqu'à réussite
     while True:
         print("\n===== Connexion utilisateur =====")
         email = input("Email : ").strip()
@@ -33,10 +32,10 @@ def connexion_utilisateur(sock):
 
 
 def envoyer_un_mail(sock, expediteur):
-    """Envoie un seul mail en réutilisant la connexion existante."""
-    destinataire = input("Destinataire : ").strip()
+    #Envoie un seul mail en réutilisant la connexion existante
+    destinataire = input("Veuillez taper l'adresse mail du destinataire : ").strip()
 
-    print("\nÉcrivez votre message ('.' pour terminer) :")
+    print("\n Veuillez saisir votre message ('.' pour terminer) :")
     lignes = []
     while True:
         ligne = input("> ")
@@ -74,15 +73,27 @@ def main():
 
         # Message 220 du serveur
         rep = s.recv(1024).decode("utf-8").strip()
-        print("<<<", rep)
+        print(rep)
 
+        # PHASE D'IDENTIFICATION AUTOMATIQUE (logiciel SMTP)
+        print("=== PHASE D'IDENTIFICATION SMTP ===")
         
-        # Authentification unique
-        expediteur = connexion_utilisateur(s)
+        # Test EHLO automatique (sera rejeté - extensions non supportées)
+        print("Test automatique EHLO...")
+        envoyer(s, "EHLO smtp-client.local")
+        
+        # HELO automatique obligatoire (sera accepté)
+        print("HELO automatique...")
+        envoyer(s, "HELO smtp-client.local")
+        
+        #print(" Phase d'identification terminée\n")
+        
+        # Authentification (après identification seulement)
+        expediteur_auth = connexion_utilisateur(s)
 
         # Boucle pour envoyer plusieurs mails sans se reconnecter
         while True:
-            envoyer_un_mail(s, expediteur)
+            envoyer_un_mail(s, expediteur_auth)
             again = input("Envoyer un autre mail ? (o/n) : ").lower()
             if again != "o":
                 break
