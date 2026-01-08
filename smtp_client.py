@@ -35,13 +35,22 @@ def envoyer_un_mail(sock, expediteur):
     #Envoie un seul mail en réutilisant la connexion existante
     destinataire = input("Veuillez taper l'adresse mail du destinataire : ").strip()
 
-    print("\n Veuillez saisir votre message ('.' pour terminer) :")
-    lignes = []
     while True:
-        ligne = input("> ")
-        if ligne == ".":
+        print("\n Veuillez saisir votre message ('.' pour terminer) :")
+        lignes = []
+        while True:
+            ligne = input("> ")
+            if ligne == ".":
+                break
+            lignes.append(ligne)
+
+        # Vérifier si le message n'est pas vide (en ignorant les espaces et lignes vides)
+        message = "\n".join(lignes).strip()
+        if not message:
+            print("Erreur : Le message ne peut pas être vide. Veuillez saisir un message.")
+            continue
+        else:
             break
-        lignes.append(ligne)
 
     # MAIL FROM (utilise l'expéditeur déjà authentifié)
     envoyer(sock, f"MAIL FROM:<{expediteur}>")
@@ -79,11 +88,10 @@ def main():
         print("=== PHASE D'IDENTIFICATION SMTP ===")
         
         # Test EHLO automatique (sera rejeté - extensions non supportées)
-        print("Test automatique EHLO...")
         envoyer(s, "EHLO smtp-client.local")
         
         # HELO automatique obligatoire (sera accepté)
-        print("HELO automatique...")
+        print ("Authentification STMP réalisée avec succès !")
         envoyer(s, "HELO smtp-client.local")
         
         #print(" Phase d'identification terminée\n")

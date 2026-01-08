@@ -24,6 +24,7 @@ class SMTPSession(threading.Thread):
 
         # État d'identification (V2)
         self.identified = False
+        self.client_domain = None
 
         # État d'authentification
         self.authenticated_user = None
@@ -78,7 +79,7 @@ class SMTPSession(threading.Thread):
                     if cmd.startswith("HELO "):
                         self.traiter_helo(ligne)
                         continue
-                    elif cmd.startswith("EHLO "):
+                    if cmd.startswith("EHLO "):
                         self.traiter_ehlo(ligne)
                         continue
 
@@ -159,10 +160,12 @@ class SMTPSession(threading.Thread):
     # SMTP
     #######
     def traiter_helo(self, ligne):
+        parts = ligne.split()
         # V2: Accepter HELO avec 250 OK
+        self.client_domain = parts[1]
         domain = ligne[5:].strip()
         self.identified = True
-        self.envoyer("250 OK")
+        self.envoyer(f"250 HELO OK {self.client_domain}")
 
     def traiter_ehlo(self, ligne):
         # V2: Rejeter EHLO avec 502 (extensions non supportées)
@@ -188,7 +191,7 @@ class SMTPSession(threading.Thread):
     def traiter_rcpt(self, ligne):
         # Vérifier MAIL FROM d'abord
         if self.mail_from is None:
-            self.envoyer("503 Bad sequence of commands")
+            self.envoyer("503 Mauvaise séquence de commandes")
             return
 
         dest = ligne[8:].replace("<", "").replace(">", "").strip()

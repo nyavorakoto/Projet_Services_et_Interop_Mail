@@ -10,3 +10,9 @@ TO: aminata@stri.com
 hello 2
 ----- FIN -----
 
+FROM: yves@stri.com
+TO: aminata@stri.Com
+----- MESSAGE -----
+uu
+----- FIN -----
+
